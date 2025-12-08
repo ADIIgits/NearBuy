@@ -3,6 +3,8 @@ import express from "express";
 import { MONGO_URI, SESSION_SECRET } from "./config/config.js";
 import authRoutes from "./routes/auth.routes.js";
 import itemRoutes from "./routes/item.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import shopRoutes from "./routes/shop.routes.js";
 const app = express();
 
 // Middlewares
@@ -42,5 +44,7 @@ app.get("/", (req, res) => {
 // Example auth routes
 app.use("/api/auth", authRoutes);
 app.use("/api/item", itemRoutes);
+app.use("/api/user",userRoutes);
+app.use("/api/shop",shopRoutes);
 
 export default app;
