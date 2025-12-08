@@ -5,8 +5,15 @@ console.log("Current Directory:", process.cwd());
 
 import connectDB from "./src/db/db.js";
 import app from "./src/app.js";
-
+import cors from "cors";
 const PORT = process.env.PORT || 3000;
+
+
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 
 const startServer = async () => {
   try {

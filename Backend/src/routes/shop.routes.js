@@ -3,7 +3,8 @@ import {
   getAllShops,
   getShopItems,
   getMyShopItems,
-  getMyShopProfile
+  getMyShopProfile,
+  getShopDetails
 } from "../controllers/shop.controllers.js";
 
 import {
@@ -23,8 +24,10 @@ router.get("/me/items", requireShop, getMyShopItems);
 // 4. Logged-in SHOP → profile
 router.get("/me", requireShop, getMyShopProfile);
 
+router.get("/:shopId", requireUser, getShopDetails);
+
 // 2. PUBLIC → view items of ANY shop
-router.get("/:shopUsername/items", getShopItems);
+router.get("/:shopId/items", getShopItems);
 
 
 export default router;

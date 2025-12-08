@@ -21,9 +21,10 @@ export const getAllShops = async (req, res) => {
 // 2️⃣ Public: get items of a shop
 export const getShopItems = async (req, res) => {
   try {
-    const { shopUsername } = req.params;
+    const { shopUsername , shopId} = req.params;
 
-    const shop = await Shop.findOne({ username: shopUsername }).lean();
+    // const shop = await Shop.findOne({ username: shopUsername }).lean();
+    const shop = await Shop.findById(shopId).lean();
     if (!shop) return res.status(404).json({ message: "Shop not found" });
 
     const items = await Item.find({ shop: shop._id }).lean();
@@ -71,6 +72,22 @@ export const getMyShopProfile = async (req, res) => {
 
     res.json({
       message: "Your profile",
+      shop
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+// 5️⃣ Get shop details by ID (USER only)
+export const getShopDetails = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    const shop = await Shop.findById(shopId, "-password").lean();
+    if (!shop) return res.status(404).json({ message: "Shop not found" });
+
+    res.json({
+      message: "Shop details fetched",
       shop
     });
   } catch (err) {

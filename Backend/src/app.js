@@ -5,10 +5,16 @@ import authRoutes from "./routes/auth.routes.js";
 import itemRoutes from "./routes/item.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
+import cors from "cors";
 const app = express();
 
 // Middlewares
 app.use(express.json());
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -23,6 +29,7 @@ app.use(
       maxAge: 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: false,
+      sameSite: "lax"
     },
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,

@@ -81,3 +81,38 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export const checkUsername = async (req, res) => {
+  try {
+    const { type, username } = req.query;
+
+    if (!type || !username) {
+      return res.status(400).json({
+        success: false,
+        message: "type and username are required"
+      });
+    }
+
+    let Model;
+
+    if (type === "user") Model = User;
+    else if (type === "shop") Model = Shop;
+    else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid type (must be user or shop)"
+      });
+    }
+
+    const exists = await Model.findOne({ username });
+
+    return res.json({
+      success: true,
+      exists: !!exists,
+      available: !exists,
+      message: exists ? "Username already exists" : "Username available"
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
