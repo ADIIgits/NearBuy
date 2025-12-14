@@ -3,27 +3,38 @@ import User from "../models/user.models.js";
 import Shop from "../models/shop.models.js";
 import bcrypt from "bcryptjs";
 
-// REGISTER
+/* ===================== REGISTER ===================== */
 export const registerUser = async (req, res) => {
   try {
-    const { type, username, password, userIcon, shopName, shopIcon, location } = req.body;
+    const {
+      type,
+      username,
+      password,
+      userIcon,
+      shopName,
+      shopIcon,
+      location,
+    } = req.body;
 
     if (!type || !username || !password) {
-      return res.status(400).json({ message: "type, username, password required" });
+      return res
+        .status(400)
+        .json({ message: "type, username, password required" });
     }
 
     let Model = type === "user" ? User : type === "shop" ? Shop : null;
     if (!Model) return res.status(400).json({ message: "invalid type" });
 
     const existing = await Model.findOne({ username });
-    if (existing) return res.status(400).json({ message: "username already exists" });
+    if (existing)
+      return res.status(400).json({ message: "username already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let data = {
+    const data = {
       username,
       password: hashedPassword,
-      location
+      location,
     };
 
     if (type === "user") {
@@ -39,48 +50,62 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({
       message: `${type} registered successfully`,
-      data: newUser
+      data: newUser,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// LOGIN
-// LOGIN
+/* ===================== LOGIN ===================== */
 export const loginUser = async (req, res) => {
   try {
     const { type, username, password } = req.body;
 
     if (!type || !username || !password) {
-      return res.status(400).json({ message: "type, username, password required" });
+      return res
+        .status(400)
+        .json({ message: "type, username, password required" });
     }
 
-    let Model = type === "user" ? User : type === "shop" ? Shop : null;
+    const Model = type === "user" ? User : type === "shop" ? Shop : null;
     if (!Model) return res.status(400).json({ message: "invalid type" });
 
     const user = await Model.findOne({ username });
-    if (!user) return res.status(404).json({ message: `${type} not found` });
+    if (!user)
+      return res.status(404).json({ message: `${type} not found` });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "incorrect password" });
+    if (!isMatch)
+      return res.status(401).json({ message: "incorrect password" });
 
-    // ⭐ Store login session
-    req.session.user = {
+    // ✅ Clean session object (no undefined fields)
+    const sessionUser = {
       id: user._id,
       type,
-      username: user.username
+      username: user.username,
     };
+
+    if (type === "user") {
+      sessionUser.userIcon = user.userIcon;
+    }
+
+    if (type === "shop") {
+      sessionUser.shopIcon = user.shopIcon;
+    }
+
+    req.session.user = sessionUser;
 
     res.json({
       message: `${type} login successful`,
-      user: req.session.user
+      user: req.session.user,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+/* ===================== CHECK USERNAME ===================== */
 export const checkUsername = async (req, res) => {
   try {
     const { type, username } = req.query;
@@ -88,30 +113,28 @@ export const checkUsername = async (req, res) => {
     if (!type || !username) {
       return res.status(400).json({
         success: false,
-        message: "type and username are required"
+        message: "type and username are required",
       });
     }
 
     let Model;
-
     if (type === "user") Model = User;
     else if (type === "shop") Model = Shop;
     else {
       return res.status(400).json({
         success: false,
-        message: "Invalid type (must be user or shop)"
+        message: "Invalid type (must be user or shop)",
       });
     }
 
     const exists = await Model.findOne({ username });
 
-    return res.json({
+    res.json({
       success: true,
       exists: !!exists,
       available: !exists,
-      message: exists ? "Username already exists" : "Username available"
+      message: exists ? "Username already exists" : "Username available",
     });
-
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

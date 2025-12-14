@@ -5,6 +5,7 @@ import {
   getMyShopItems,
   getMyShopProfile,
   getShopDetails
+  , getNearestShops
 } from "../controllers/shop.controllers.js";
 
 import {
@@ -17,6 +18,8 @@ const router = express.Router();
 
 // 1. Logged-in USER → see all shops
 router.get("/all", requireUser, getAllShops);
+//get nearest shops based on location
+router.get("/nearest", getNearestShops);
 
 // 3. Logged-in SHOP → view their own items
 router.get("/me/items", requireShop, getMyShopItems);
@@ -25,6 +28,8 @@ router.get("/me/items", requireShop, getMyShopItems);
 router.get("/me", requireShop, getMyShopProfile);
 
 router.get("/:shopId", requireUser, getShopDetails);
+
+
 
 // 2. PUBLIC → view items of ANY shop
 router.get("/:shopId/items", getShopItems);

@@ -94,3 +94,43 @@ export const getShopDetails = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+export const getNearestShops = async (req, res) => {
+  try {
+    const userId = req.session?.user?.id;
+    const userType = req.session?.user?.type;
+
+    if (!userId || userType !== "user") {
+      return res.status(401).json({ message: "Only users can fetch nearby shops" });
+    }
+
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "Latitude and longitude are required" });
+    }
+
+    const userLocation = [parseFloat(lng), parseFloat(lat)];
+
+    // Find shops within 3 km
+    const shops = await Shop.find({
+      location: {
+        $near: {
+          $geometry: { type: "Point", coordinates: userLocation },
+          $maxDistance: 3000  // 3 km in meters
+        }
+      }
+    }).select("shopName shopIcon location username");
+
+    res.json({
+      message: "Nearby shops fetched successfully",
+      total: shops.length,
+      shops
+    });
+
+  } catch (err) {
+    console.error("Nearest shops error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};

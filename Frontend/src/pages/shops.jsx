@@ -1,7 +1,7 @@
 // shops.jsx
 import { useEffect, useState } from "react";
 import { getAllShops } from "../services/shopService";
-import ShopCard from "../components/shopCard";
+import ShopCard from "../components/ShopCard";
 
 export default function Shops() {
   const [shops, setShops] = useState([]);

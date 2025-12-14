@@ -5,6 +5,9 @@ import authRoutes from "./routes/auth.routes.js";
 import itemRoutes from "./routes/item.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import shopRoutes from "./routes/shop.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import geoRoutes from "./routes/geo.routes.js";
 import cors from "cors";
 const app = express();
 
@@ -53,5 +56,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/item", itemRoutes);
 app.use("/api/user",userRoutes);
 app.use("/api/shop",shopRoutes);
+app.use("/api/order", orderRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/geo", geoRoutes);
 
 export default app;

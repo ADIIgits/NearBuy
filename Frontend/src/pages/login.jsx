@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { loginUser } from "../services/authService";
+import { AuthContext } from "../context/authContext";
+import { useContext } from "react";
+
 
 export default function Login() {
+    const { login } = useContext(AuthContext);
   const [type, setType] = useState("user");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +24,7 @@ export default function Login() {
 
     try {
       const res = await loginUser(payload);
+      login(res.data.user);
       setResponse(res.data);
       setError(null);
     } catch (err) {

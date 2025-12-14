@@ -16,22 +16,6 @@ const userSchema = new mongoose.Schema(
       },
       coordinates: { type: [Number], default: [0, 0] },
     },
-
-    totalOrders: { type: Number, default: 0 },
-
-    orders: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Order",
-      },
-    ],
-
-    cart: [
-      {
-        item: { type: mongoose.Schema.Types.ObjectId, ref: "Item" },
-        quantity: { type: Number, default: 1 },
-      },
-    ],
   },
   { timestamps: true }
 );

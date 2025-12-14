@@ -8,6 +8,11 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/status", sessionStatus);
 router.get("/checkuserexist", checkUsername);
+router.get("/session", (req, res) => {
+  res.json({
+    user: req.session.user || null
+  });
+});
 router.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.json({ message: "Logged out successfully" });
