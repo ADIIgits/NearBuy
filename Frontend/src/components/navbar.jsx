@@ -1,110 +1,86 @@
 import { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
-import { findNearestShops } from "../services/shopService";
+
+const linkBase =
+  "flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200";
 
 export default function Navbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleNearestShops = async () => {
-    try {
-      if (!navigator.geolocation) {
-        alert("Geolocation not supported");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        const res = await findNearestShops(lat, lng);
-
-        navigate("/shop/nearest", { state: { shops: res.data.shops } });
-      });
-    } catch (err) {
-      console.log("Nearest shops error:", err);
-    }
-  };
-
-  const goToSettings = () => {
-    if (!user) return;
-
-    const path =
-      user.type === "shop" ? "/settings/shop" : "/settings/user";
-
-    navigate(path);
-  };
+  if (!user) return null;
 
   return (
-    <nav
-      style={{
-        padding: 12,
-        background: "#eee",
-        display: "flex",
-        alignItems: "center",
-        gap: 20,
-      }}
-    >
-      <Link to="/">Landing</Link>
-      <Link to="/shop/all">Shops</Link>
+    <aside className="w-56 h-full bg-gray-100 flex flex-col justify-between p-4">
+      {/* NAV LINKS */}
+      <div className="flex flex-col gap-2">
+        <NavLink to="/" className={linkBase}>
+          🏠 Home
+        </NavLink>
 
-      {user && user.type === "shop" && (
-        <Link to="/item/create">Create Item</Link>
-      )}
-
-      <button onClick={handleNearestShops} style={{ cursor: "pointer" }}>
-        Nearest Shops
-      </button>
-
-      {user && (
-        <Link
-          to={user.type === "shop" ? "/order/shop/me" : "/order/user/me"}
-          style={{ cursor: "pointer" }}
+        <NavLink
+          to={
+            user.type === "shop"
+              ? "/order/shop/me"
+              : "/order/user/me"
+          }
+          className={linkBase}
         >
-          Orders
-        </Link>
-      )}
+          📦 Orders
+        </NavLink>
 
-      {!user && (
-        <>
-          <Link to="/login">Login</Link>
-          <Link to="/register">Register</Link>
-        </>
-      )}
+        {/* USER-ONLY LINKS */}
+        {user.type === "user" && (
+          <>
+            <NavLink to="/shop/all" className={linkBase}>
+              🏪 Shops
+            </NavLink>
 
-      {user && (
-        <div
-          style={{
-            marginLeft: "auto",
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-          }}
-        >
-          <img
-            src={
-              user.type === "user"
-                ? user.userIcon || "https://via.placeholder.com/40"
-                : user.shopIcon || "https://via.placeholder.com/40"
-            }
-            alt="profile"
-            onClick={goToSettings}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              objectFit: "cover",
-              cursor: "pointer",
-              border: "2px solid #ddd",
-            }}
-            title="Go to settings"
-          />
+            <NavLink to="/shop/nearest" className={linkBase}>
+              📍 Nearest Shops
+            </NavLink>
+          </>
+        )}
 
-          <span>@{user.username}</span>
-          <button onClick={logout}>Logout</button>
+        {/* SHOP-ONLY LINKS */}
+        {user.type === "shop" && (
+          <>
+            <NavLink to="/item/create" className={linkBase}>
+              ➕ Create Item
+            </NavLink>
+
+            <NavLink to="/shop/all" className={linkBase}>
+              🏪 Listed Items
+            </NavLink>
+          </>
+        )}
       </div>
-      )}
-    </nav>
+
+      {/* PROFILE (BOTTOM) */}
+      <div
+        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-200 cursor-pointer"
+        onClick={() =>
+          navigate(
+            user.type === "shop"
+              ? "/settings/shop"
+              : "/settings/user"
+          )
+        }
+      >
+        <img
+          src={
+            user.type === "shop"
+              ? user.shopIcon
+              : user.userIcon
+          }
+          alt="profile"
+          className="w-10 h-10 rounded-full object-cover bg-gray-300"
+        />
+        <span className="text-sm font-medium">
+          @{user.username}
+        </span>
+      </div>
+    </aside>
   );
 }

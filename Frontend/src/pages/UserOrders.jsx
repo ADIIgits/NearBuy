@@ -8,78 +8,47 @@ import {
 
 export default function UserOrders() {
   const { user } = useContext(AuthContext);
-
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ❌ DO NOT RETURN BEFORE HOOKS
-  // Instead handle unauthorized AFTER hooks run
-
   const cancelOrder = async (orderId) => {
-    try {
-      console.log("Cancelling order:", orderId);
-      const res = await cancelOrderService(orderId);
-
-      setOrders(prev =>
-        prev.map(o =>
-          o._id === orderId ? { ...o, status: "canceled" } : o
-        )
-      );
-
-      console.log(res.data.message);
-    } catch (err) {
-      console.log("Cancel error:", err);
-    }
+    await cancelOrderService(orderId);
+    setOrders(prev =>
+      prev.map(o =>
+        o._id === orderId ? { ...o, status: "canceled" } : o
+      )
+    );
   };
 
   useEffect(() => {
-    if (!user || user.type !== "user") return; // 👈 SAFE inside effect
+    if (!user || user.type !== "user") return;
 
-    getAllUserOrders()
-      .then((res) => {
-        const arr = Array.isArray(res.data)
-          ? res.data
-          : res.data.orders || [];
-        setOrders(arr);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log("Error:", err);
-        setLoading(false);
-      });
+    getAllUserOrders().then((res) => {
+      setOrders(res.data.orders || res.data || []);
+      setLoading(false);
+    });
   }, [user]);
 
-  // Now it's safe to block UI
-  if (!user || user.type !== "user") {
-    return <p style={{ padding: 20 }}>Unauthorized</p>;
-  }
+  if (!user || user.type !== "user")
+    return <p className="p-6">Unauthorized</p>;
 
-  if (loading) {
-    return <p style={{ padding: 20 }}>Loading orders...</p>;
-  }
+  if (loading)
+    return <p className="p-6">Loading orders...</p>;
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Your Orders</h2>
+    <div className="p-8 max-w-6xl mx-auto">
+      <p className="text-sm text-gray-500">Orders</p>
+      <h1 className="text-3xl font-medium mb-6">Recent Orders</h1>
 
-      {orders.length === 0 ? (
-        <p>No orders found.</p>
-      ) : (
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 20,
-          marginTop: 20
-        }}>
-          {orders.map(order => (
-            <UserOrderCard
-              key={order._id}
-              order={order}
-              onCancel={cancelOrder}
-            />
-          ))}
-        </div>
-      )}
+      <div className="flex flex-col gap-6 max-w-5xl">
+        {orders.map(order => (
+          <UserOrderCard
+            key={order._id}
+            order={order}
+            onCancel={cancelOrder}
+          />
+        ))}
+      </div>
     </div>
   );
 }

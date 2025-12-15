@@ -1,7 +1,9 @@
-import { useLocation, Link } from "react-router-dom";
+// src/pages/NearestShops.jsx
 import { useEffect, useState } from "react";
+import NearestShopCard from "../components/NearestShopCard";
+import { findNearestShops } from "../services/shopService";
 
-// Distance calculator (Haversine)
+// Haversine distance
 function getDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -17,12 +19,11 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 export default function NearestShops() {
-  const location = useLocation();
-  const shops = location.state?.shops || [];
-
   const [userCoords, setUserCoords] = useState(null);
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // get user live coordinates
+  // 1️⃣ Get user location
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -31,78 +32,68 @@ export default function NearestShops() {
           lng: pos.coords.longitude,
         });
       },
-      (err) => console.log("Location error:", err)
+      () => setLoading(false)
     );
   }, []);
 
-  if (!userCoords)
-    return <p style={{ padding: 20 }}>Getting your location...</p>;
+  // 2️⃣ Fetch nearest shops from backend
+  useEffect(() => {
+    if (!userCoords) return;
 
-  if (!shops || shops.length === 0)
-    return <p style={{ padding: 20 }}>No nearby shops found.</p>;
+    const fetchShops = async () => {
+      try {
+        const res = await findNearestShops(
+          userCoords.lat,
+          userCoords.lng
+        );
+        setShops(res.data.shops || []);
+      } catch (err) {
+        console.error("Nearest shops error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShops();
+  }, [userCoords]);
+
+  /* ---------------- STATES ---------------- */
+
+  if (loading)
+    return <p className="p-6">Finding nearby shops...</p>;
+
+  if (!shops.length)
+    return <p className="p-6">No nearby shops found.</p>;
+
+  /* ---------------- UI ---------------- */
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Nearest Shops</h2>
+    <div className="p-8">
+      <p className="text-sm text-gray-500">Nearest Shops</p>
+      <h1 className="text-3xl font-semibold mb-6">
+        Nearest Shops
+      </h1>
 
-      <p style={{ color: "#555" }}>
-        Showing shops closest to your current location.
-      </p>
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 20,
-          marginTop: 20,
-        }}
-      >
+      <div className="flex gap-6 flex-wrap">
         {shops.map((shop) => {
-          const coords = shop.location?.coordinates;
-          let dist = "N/A";
+          let distance = "N/A";
 
-          if (coords) {
-            const [lng, lat] = coords;
-            dist = getDistanceKm(userCoords.lat, userCoords.lng, lat, lng);
+          if (shop.location?.coordinates) {
+            const [lng, lat] = shop.location.coordinates;
+            distance = getDistanceKm(
+              userCoords.lat,
+              userCoords.lng,
+              lat,
+              lng
+            );
           }
 
           return (
-            <Link
+            <NearestShopCard
               key={shop._id}
-              to={`/shop/${shop._id}`}
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              <div
-                style={{
-                  width: 230,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                  padding: 12,
-                  background: "#fafafa",
-                }}
-              >
-                <img
-                  src={shop.shopIcon || "https://via.placeholder.com/200"}
-                  alt="shop"
-                  style={{
-                    width: "100%",
-                    height: 120,
-                    objectFit: "cover",
-                    borderRadius: 6,
-                  }}
-                />
-
-                <h3 style={{ marginTop: 10 }}>{shop.shopName}</h3>
-                <p style={{ margin: 0, color: "#555" }}>@{shop.username}</p>
-
-                <p style={{ marginTop: 6 }}>
-                  📏 <b>{dist} km</b> away
-                </p>
-              </div>
-            </Link>
+              shop={shop}
+              distance={distance}
+            />
           );
         })}
       </div>

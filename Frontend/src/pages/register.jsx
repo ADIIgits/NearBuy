@@ -1,193 +1,164 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { registerUser } from "../services/authService";
 import api from "../services/api";
+
+import tick from "../assets/icons/tick.png";
+import tickFilled from "../assets/icons/tickfilled.png";
+import cross from "../assets/icons/cross.png";
+import loading from "../assets/icons/loading.gif";
 
 export default function Register() {
   const [type, setType] = useState("user");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const [userIcon, setUserIcon] = useState("");
-  const [shopName, setShopName] = useState("");
-  const [shopIcon, setShopIcon] = useState("");
-
   const [location, setLocation] = useState(null);
 
-  const [response, setResponse] = useState(null);
+  const [usernameStatus, setUsernameStatus] = useState("idle");
   const [error, setError] = useState(null);
 
-  const [userCheckMsg, setUserCheckMsg] = useState("");  // availability result
-
-  // 📍 Fetch real location
+  /* ---------------- LOCATION ---------------- */
   const fetchLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setLocation({
+        type: "Point",
+        coordinates: [pos.coords.longitude, pos.coords.latitude],
+      });
+    });
+  };
+
+  /* ---------------- USERNAME CHECK (DEBOUNCE) ---------------- */
+  useEffect(() => {
+    if (!username.trim()) {
+      setUsernameStatus("idle");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setLocation({
-            type: "Point",
-            coordinates: [longitude, latitude]   // GeoJSON requires [lng, lat]
-        });
+    setUsernameStatus("checking");
 
-      },
-      (err) => alert("Location access denied")
-    );
-  };
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.get(
+          `/auth/checkuserexist?type=${type}&username=${username}`
+        );
 
-  // 🔍 Check if username exists
-  const checkUsername = async () => {
-  if (!username.trim()) {
-    setUserCheckMsg("Enter a username first");
-    return;
-  }
+        setUsernameStatus(res.data.exists ? "taken" : "available");
+      } catch {
+        setUsernameStatus("idle");
+      }
+    }, 600);
 
-  try {
-    const res = await api.get(`/auth/checkuserexist?type=${type}&username=${username}`);
+    return () => clearTimeout(timer);
+  }, [username, type]);
 
-    if (res.data.exists) {
-      setUserCheckMsg("❌ Username already taken");
-    } else {
-      setUserCheckMsg("✅ Username is available");
-    }
-  } catch (err) {
-    setUserCheckMsg("Error checking username");
-  }
-};
-
-
-  // 🎯 Submit final form
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const payload = {
-      type,
-      username,
-      password,
-      location,
-    };
-
-    if (type === "user") payload.userIcon = userIcon;
-    if (type === "shop") {
-      payload.shopName = shopName;
-      payload.shopIcon = shopIcon;
-    }
+    if (usernameStatus !== "available") return;
 
     try {
-      const res = await registerUser(payload);
-      setResponse(res.data);
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data || "Something went wrong");
-      setResponse(null);
+      await registerUser({
+        type,
+        username,
+        password,
+        location,
+      });
+    } catch {
+      setError("Registration failed");
     }
+  };
+
+  /* ---------------- ICON PICKER ---------------- */
+  const getStatusIcon = () => {
+    if (usernameStatus === "checking") return loading;
+    if (usernameStatus === "available") return tickFilled;
+    if (usernameStatus === "taken") return cross;
+    return tick; // idle
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Register</h2>
-
-      <button onClick={fetchLocation}>📍 Get My Location</button>
-      {location && (
-        <p style={{ color: "green" }}>
-          Location fetched: {location.coordinates[1]}, {location.coordinates[0]}
-        </p>
-      )}
-
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <form
         onSubmit={handleSubmit}
-        style={{ display: "grid", gap: 10, maxWidth: 300 }}
+        className="w-[360px] flex flex-col gap-5"
       >
-        {/* TYPE */}
-        <label>User Type</label>
-        <select value={type} onChange={(e) => setType(e.target.value)}>
+        <h1 className="text-3xl font-semibold text-center">Register</h1>
+
+      <div className="flex gap-3 justify-center items-center">
+        {/* USER TYPE DROPDOWN */}
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="px-4 py-2 rounded-full bg-gray-300 text-black outline-none cursor-pointer"
+        >
           <option value="user">User</option>
           <option value="shop">Shop</option>
         </select>
 
-        {/* USERNAME + CHECK BUTTON */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            type="text"
-            placeholder="username"
-            value={username}
-            style={{ flex: 1 }}
-            onChange={(e) => {
-              setUsername(e.target.value);
-              setUserCheckMsg(""); // clear result when typing
-            }}
-          />
-          <button type="button" onClick={checkUsername}>
-            Check
-          </button>
-        </div>
+        {/* LOCATION BUTTON */}
+        <button
+          type="button"
+          onClick={fetchLocation}
+          className={`px-4 py-2 rounded-full ${
+            location ? "bg-teal-300" : "bg-gray-100"
+          }`}
+        >
+          get location
+        </button>
+      </div>
 
-        {userCheckMsg && (
-          <p
-            style={{
-              color: userCheckMsg.includes("available") ? "green" : "red",
-              marginTop: -8,
-              marginBottom: 0,
-            }}
-          >
-            {userCheckMsg}
-          </p>
-        )}
+        {/* USERNAME */}
+        <div className="relative">
+          <label className="text-sm text-gray-600">Username</label>
+
+          <input
+            className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-200 outline-none pr-12"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+
+          {/* STATUS ICON */}
+          <img
+            src={getStatusIcon()}
+            alt="status"
+            className="absolute right-3 top-10 w-5 h-5"
+          />
+
+          {usernameStatus === "taken" && (
+            <p className="text-sm text-red-500 mt-1">
+              username not available
+            </p>
+          )}
+        </div>
 
         {/* PASSWORD */}
-        <input
-          type="password"
-          placeholder="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        {/* USER-ONLY FIELD */}
-        {type === "user" && (
+        <div>
+          <label className="text-sm text-gray-600">Password</label>
           <input
-            type="text"
-            placeholder="user icon URL"
-            value={userIcon}
-            onChange={(e) => setUserIcon(e.target.value)}
+            type="password"
+            className="w-full mt-1 px-4 py-3 rounded-xl bg-gray-200 outline-none"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
-        )}
+        </div>
 
-        {/* SHOP-ONLY FIELDS */}
-        {type === "shop" && (
-          <>
-            <input
-              type="text"
-              placeholder="shop name"
-              value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="shop icon URL"
-              value={shopIcon}
-              onChange={(e) => setShopIcon(e.target.value)}
-            />
-          </>
-        )}
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          disabled={usernameStatus !== "available"}
+          className={`mt-4 py-3 rounded-full text-lg transition
+            ${
+              usernameStatus === "available"
+                ? "bg-teal-300 text-black"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+        >
+          Submit
+        </button>
 
-        <button type="submit">Register</button>
+        {error && <p className="text-red-500 text-center">{error}</p>}
       </form>
-
-      {/* DISPLAY RESPONSE */}
-      {response && (
-        <div style={{ marginTop: 20, color: "green" }}>
-          <pre>{JSON.stringify(response, null, 2)}</pre>
-        </div>
-      )}
-
-      {error && (
-        <div style={{ marginTop: 20, color: "red" }}>
-          <pre>{JSON.stringify(error, null, 2)}</pre>
-        </div>
-      )}
     </div>
   );
 }

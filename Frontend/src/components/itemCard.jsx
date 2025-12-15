@@ -1,169 +1,55 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ItemCard({ item, onChange }) {
   const [qty, setQty] = useState(0);
   const [note, setNote] = useState("");
 
-  // Images array fallback
-  const images = item.images?.length > 0
-    ? item.images
-    : item.itemIcon
-    ? [item.itemIcon]
-    : ["https://via.placeholder.com/300"];
-
-  const [currentImg, setCurrentImg] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const inc = () => setQty(q => q + 1);
-  const dec = () => setQty(q => (q > 0 ? q - 1 : 0));
-
   useEffect(() => {
     onChange(item._id, qty, note);
   }, [qty, note]);
 
-  const nextImg = () => {
-    setCurrentImg((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImg = () => {
-    setCurrentImg((prev) => (prev - 1 + images.length) % images.length);
-  };
-
   return (
     <div
-      style={{
-        border: `1.5px solid ${qty > 0 ? "green" : "#ccc"}`,
-        padding: 10,
-        width: 230,
-        borderRadius: 8,
-        transition: "border-color 0.2s ease",
-      }}
+      className={`w-64 rounded-xl overflow-hidden shadow-md bg-white border-2 transition
+        ${qty > 0 ? "border-green-500" : "border-transparent"}
+      `}
     >
-      {/* 🔥 IMAGE SLIDER */}
-      <div style={{ position: "relative" }}>
+      {/* IMAGE */}
+      <div className="relative h-44">
         <img
-          onClick={() => setModalOpen(true)}
-          src={images[currentImg]}
-          alt="item"
-          style={{
-            width: "100%",
-            height: 140,
-            objectFit: "cover",
-            borderRadius: 5,
-            cursor: "pointer",
-          }}
+          src={item.itemIcon || "https://via.placeholder.com/300"}
+          className="w-full h-full object-cover"
+          alt={item.itemName}
         />
 
-        {/* PREV BUTTON */}
-        {images.length > 1 && (
+        {/* QUANTITY CONTROLS */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-2 bg-black/50 text-white px-3 py-1 rounded-full">
           <button
-            onClick={prevImg}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: 5,
-              transform: "translateY(-50%)",
-              background: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "50%",
-              padding: "4px 8px",
-              cursor: "pointer",
-            }}
+            type="button"
+            onClick={() => setQty((q) => Math.max(0, q - 1))}
+            className="px-1"
           >
-            ◀
+            −
           </button>
-        )}
-
-        {/* NEXT BUTTON */}
-        {images.length > 1 && (
+          <span className="min-w-[16px] text-center">{qty}</span>
           <button
-            onClick={nextImg}
-            style={{
-              position: "absolute",
-              top: "50%",
-              right: 5,
-              transform: "translateY(-50%)",
-              background: "#fff",
-              border: "1px solid #ccc",
-              borderRadius: "50%",
-              padding: "4px 8px",
-              cursor: "pointer",
-            }}
+            type="button"
+            onClick={() => setQty((q) => q + 1)}
+            className="px-1"
           >
-            ▶
+            +
           </button>
-        )}
-      </div>
-
-      {/* TITLE & PRICE */}
-      <h4 style={{ marginTop: 10 }}>{item.itemName}</h4>
-      <p>₹{item.price}</p>
-
-      {/* Quantity controls */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginTop: 8,
-        }}
-      >
-        <button type="button" onClick={dec}>-</button>
-        <span>{qty}</span>
-        <button type="button" onClick={inc}>+</button>
-      </div>
-
-      {/* Note input */}
-      <div style={{ marginTop: 8 }}>
-        <label
-          style={{
-            display: "block",
-            fontSize: 14,
-            marginBottom: 4,
-          }}
-        >
-          Note
-        </label>
-        <input
-          type="text"
-          placeholder="extra cheese, no mayo..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          style={{ width: "100%" }}
-        />
-      </div>
-
-      {/* 🔥 FULLSCREEN IMAGE MODAL */}
-      {modalOpen && (
-        <div
-          onClick={() => setModalOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.8)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 999,
-            cursor: "zoom-out",
-          }}
-        >
-          <img
-            src={images[currentImg]}
-            alt="large"
-            style={{
-              width: "90%",
-              maxWidth: "500px",
-              maxHeight: "90%",
-              borderRadius: 10,
-              objectFit: "contain",
-            }}
-          />
         </div>
-      )}
+
+        {/* GRADIENT (NON-CLICKABLE) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+
+        {/* TEXT */}
+        <div className="absolute bottom-3 left-3 z-10 text-white">
+          <p className="text-lg font-medium">{item.itemName}</p>
+          <p className="text-sm">₹{item.price}</p>
+        </div>
+      </div>
     </div>
   );
 }

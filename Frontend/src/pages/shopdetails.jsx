@@ -5,127 +5,144 @@ import { getItemsByShop } from "../services/itemService";
 import { createOrder } from "../services/orderService";
 import ItemCard from "../components/ItemCard";
 
+
+
+
 export default function ShopDetails() {
+
+  const placeOrder = async () => {
+    const filteredItems = Object.entries(orderData)
+      .filter(([_, d]) => d.qty > 0)
+      .map(([itemId, d]) => ({
+        itemId,
+        quantity: d.qty,
+        note: d.note,
+      }));
+
+    if (!filteredItems.length) {
+      setOrderError("Please select at least one item");
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+      setOrderError(null);
+      setOrderSuccess(null);
+
+      await createOrder({
+        shopId: id,
+        items: filteredItems,
+      });
+
+      setOrderSuccess("✅ Order placed successfully!");
+      setOrderData({});
+    } catch (err) {
+      setOrderError(
+        err.response?.data?.message || "❌ Failed to place order"
+      );
+    } finally {
+      setPlacingOrder(false);
+    }
+  };
   const { id } = useParams();
+
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(null);
+  const [orderError, setOrderError] = useState(null);
+
 
   const [shop, setShop] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ⭐ store qty + note for each item
   const [orderData, setOrderData] = useState({});
 
-  // ⭐ store order response
-  const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
-
   const handleItemChange = (itemId, qty, note) => {
-    setOrderData(prev => ({
+    setOrderData((prev) => ({
       ...prev,
-      [itemId]: { qty, note }
+      [itemId]: { qty, note },
     }));
   };
 
-  const placeOrder = async () => {
-    const filteredItems = Object.entries(orderData)
-      .filter(([_, data]) => data.qty > 0)
-      .map(([itemId, data]) => ({
-        itemId,
-        quantity: data.qty,
-        note: data.note,
-      }));
 
-    if (filteredItems.length === 0) {
-      alert("No items selected!");
-      return;
-    }
-
-    const payload = {
-      shopId: id,
-      items: filteredItems,
-    };
-
-    try {
-      const res = await createOrder(payload);
-      setResponse(res.data);
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data || "Something went wrong");
-      setResponse(null);
-    }
-  };
 
   useEffect(() => {
-    Promise.all([getShopById(id), getItemsByShop(id)])
-      .then(([shopRes, itemsRes]) => {
+    Promise.all([getShopById(id), getItemsByShop(id)]).then(
+      ([shopRes, itemRes]) => {
         setShop(shopRes.data.shop || shopRes.data);
-        setItems(itemsRes.data.items || itemsRes.data);
+        setItems(itemRes.data.items || itemRes.data);
         setLoading(false);
-      })
-      .catch(err => {
-        console.log("Error fetching shop details:", err);
-        setLoading(false);
-      });
+      }
+    );
   }, [id]);
 
-  if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
-  if (!shop) return <p style={{ padding: 20 }}>Shop not found</p>;
+  if (loading) return <p className="p-6">Loading...</p>;
+  if (!shop) return <p className="p-6">Shop not found</p>;
 
   return (
-    <div style={{ padding: 20 }}>
-      {/* Top Section with button */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h2>{shop.shopName}</h2>
-        <button
-          onClick={placeOrder}
-          style={{ height: 40, padding: "0 20px", cursor: "pointer" }}
-        >
-          Place Order
-        </button>
+    <div className="p-8">
+      {/* PAGE TITLE */}
+      <p className="text-sm text-gray-500">Shops</p>
+
+      {/* SHOP HEADER */}
+      <div className="flex justify-between items-start mt-4">
+        <div className="flex gap-6 items-center">
+          <img
+            src={shop.shopIcon || "https://via.placeholder.com/150"}
+            className="w-28 h-28 rounded-full object-cover bg-gray-200"
+          />
+
+          <div>
+            <h1 className="text-3xl font-medium">{shop.shopName}</h1>
+            <p className="text-gray-500">@{shop.username}</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Since {new Date(shop.createdAt).getFullYear()}
+            </p>
+          </div>
+        </div>
+
+        <div>
+            <button
+            onClick={placeOrder}
+            disabled={placingOrder}
+            className={`px-6 py-2 rounded-full transition
+              ${
+                placingOrder
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }
+            `}
+          >
+            {placingOrder ? "Placing..." : "Place Order"}
+          </button>
+
+          {/* ORDER FEEDBACK */}
+          {orderSuccess && (
+            <div className="mt-4 text-green-600 font-medium">
+              {orderSuccess}
+            </div>
+          )}
+
+          {orderError && (
+            <div className="mt-4 text-red-600 font-medium">
+              {orderError}
+            </div>
+          )}
+        </div>
+        
       </div>
 
-      <section style={{ borderBottom: "1px solid #ddd", paddingBottom: 20 }}>
-        <img
-          src={shop.shopIcon || "https://via.placeholder.com/150"}
-          alt="shop icon"
-          style={{ width: 120, height: 120, borderRadius: "50%", objectFit: "cover" }}
-        />
+      {/* ITEMS */}
+      <h2 className="text-2xl font-medium mt-10 mb-6">Items</h2>
 
-        <p><b>Username:</b> @{shop.username}</p>
-        <p><b>Joined:</b> {new Date(shop.createdAt).toLocaleDateString()}</p>
-      </section>
-
-      <h3 style={{ marginTop: 20 }}>Items</h3>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
-        {items.length > 0 ? (
-          items.map(item => (
-            <ItemCard
-              key={item._id}
-              item={item}
-              onChange={handleItemChange}
-            />
-          ))
-        ) : (
-          <p>No items found</p>
-        )}
-      </div>
-
-      {/* ⭐ API RESPONSE SECTION */}
-      <div style={{ marginTop: 30 }}>
-        {response && (
-          <div style={{ color: "green" }}>
-            <h3>Order Response:</h3>
-            <pre>{JSON.stringify(response, null, 2)}</pre>
-          </div>
-        )}
-
-        {error && (
-          <div style={{ color: "red" }}>
-            <h3>Error:</h3>
-            <pre>{JSON.stringify(error, null, 2)}</pre>
-          </div>
-        )}
+      <div className="flex flex-wrap gap-6">
+        {items.map((item) => (
+          <ItemCard
+            key={item._id}
+            item={item}
+            onChange={handleItemChange}
+          />
+        ))}
       </div>
     </div>
   );

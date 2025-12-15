@@ -12,8 +12,11 @@ export const getLoggedInShop = () => api.get("/shop/me");
 // UPDATE SHOP NAME
 // ==========================
 export const updateShopName = (shopName) =>
-  api.post("/settings/shop/update/shopname", { shopName });
+  api.post("/settings/shop/update/name", { shopName });
 
+//update username
+export const updateShopUsername = (username) =>
+  api.post("/settings/shop/update/username", { username });
 
 // ==========================
 // UPDATE SHOP PASSWORD

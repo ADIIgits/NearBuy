@@ -1,27 +1,35 @@
 import { Link } from "react-router-dom";
 
-export default function ShopCard({ shop }) {
+export default function ShopCard({ shop, distance }) {
   return (
-    <Link 
-      to={`/shop/${shop._id}`} 
-      style={{
-        border: "1px solid #ccc",
-        padding: 15,
-        borderRadius: 8,
-        width: 200,
-        textDecoration: "none",
-        color: "black",
-        display: "block"
-      }}
+    <Link
+      to={`/shop/${shop._id}`}
+      className="w-[240px] rounded-xl overflow-hidden shadow hover:shadow-lg transition bg-white"
     >
-      <img 
-        src={shop.shopIcon || "https://via.placeholder.com/150"} 
-        alt="icon" 
-        style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 5 }} 
-      />
+      {/* IMAGE */}
+      <div className="relative h-[160px]">
+        <img
+          src={shop.shopIcon || "https://via.placeholder.com/300"}
+          alt={shop.shopName}
+          className="w-full h-full object-cover"
+        />
 
-      <h3 style={{ margin: "10px 0 5px" }}>{shop.shopName}</h3>
-      <p style={{ color: "#555" }}>@{shop.username}</p>
+        {/* DARK GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+
+        {/* TEXT OVER IMAGE */}
+        <div className="absolute bottom-3 left-3 text-white">
+          <h3 className="font-semibold text-lg leading-tight">
+            {shop.shopName}
+          </h3>
+          <p className="text-sm opacity-90">@{shop.username}</p>
+          {distance && (
+            <p className="text-xs opacity-80 mt-1">
+              {distance} km away
+            </p>
+          )}
+        </div>
+      </div>
     </Link>
   );
 }

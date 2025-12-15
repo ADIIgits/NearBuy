@@ -1,125 +1,96 @@
 export default function UserOrderCard({ order, onCancel }) {
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        padding: 16,
-        borderRadius: 10,
-        background: "#fff",
-        position: "relative",
-      }}
-    >
-      {/* ❌ CANCEL BUTTON (Always shown — backend validates) */}
-      <button
-        onClick={() => onCancel(order._id)}
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          background: "#ffe6e6",
-          color: "#b30000",
-          border: "1px solid #b30000",
-          borderRadius: 4,
-          padding: "3px 8px",
-          cursor: "pointer",
-          fontSize: 12,
-        }}
-      >
-        ✕ Cancel
-      </button>
+    <div className="relative bg-gray-200 rounded-xl p-6">
+      {/* CANCEL BUTTON */}
+      {order.status === "pending" && (
+        <button
+          onClick={() => onCancel(order._id)}
+          className="absolute top-4 right-4 px-4 py-1 rounded-full bg-gray-300 hover:bg-gray-400 text-sm"
+        >
+          ✕ Cancel
+        </button>
+      )}
 
-      {/* SHOP INFO */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <img
-          src={order.shop?.shopIcon}
-          alt="shop"
-          style={{
-            width: 45,
-            height: 45,
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
+      {/* HEADER */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-gray-300 overflow-hidden">
+          <img
+            src={order.shop?.shopIcon}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
         <div>
-          <b style={{ fontSize: 17 }}>{order.shop?.shopName}</b>
-          <p style={{ margin: 0, fontSize: 13, color: "#666" }}>
-            Order #{order._id.slice(-6)} •{" "}
-            {new Date(order.createdAt).toLocaleString()}
+          <p className="font-medium">@{order.shop?.username}</p>
+          <p className="text-sm text-gray-500">
+            Order id: {order._id.slice(-6)}
           </p>
         </div>
       </div>
 
       {/* ITEMS */}
-      <div style={{ marginTop: 15 }}>
-        {order.items?.map((entry) => (
-          <div
-            key={entry._id}
-            style={{
-              padding: 10,
-              border: "1px solid #eee",
-              borderRadius: 6,
-              marginBottom: 8,
-              background: "#fafafa",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 15,
-              }}
-            >
-              <span>{entry.item?.itemName}</span>
-              <span>Qty: {entry.quantity}</span>
-            </div>
+      <div className="mt-4">
+        <p className="font-medium mb-2">Items</p>
 
-            <p style={{ fontSize: 13, color: "#444", marginTop: 4 }}>
-              ₹{entry.item?.price}
-            </p>
-          </div>
-        ))}
+        <div className="flex gap-4">
+          {order.items.map((entry) => (
+            <div
+              key={entry._id}
+              className="relative w-24 h-28 rounded-lg overflow-hidden bg-gray-300"
+            >
+              {/* QTY BADGE */}
+              <div className="absolute top-1 right-1 bg-black text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                {entry.quantity}
+              </div>
+
+              <img
+                src={entry.item?.itemIcon}
+                className="w-full h-full object-cover"
+              />
+
+              {/* TEXT */}
+              <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/70 to-transparent p-2">
+                <p className="text-white text-xs font-medium">
+                  {entry.item?.itemName}
+                </p>
+                <p className="text-white text-xs">
+                  ₹{entry.item?.price}
+                </p>
+                {entry.note && (
+                  <p className="text-[10px] text-gray-200 italic">
+                    Note
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* TOTAL */}
-      <p style={{ marginTop: 10, fontSize: 16 }}>
-        <b>Total Paid:</b> ₹{order.totalAmount}
-      </p>
-
-      {/* STATUS */}
-      <p style={{ marginTop: 4 }}>
-        <b>Status:</b>{" "}
-        <span
-          style={{
-            color:
-              order.status === "completed"
-                ? "green"
-                : order.status === "pending"
-                ? "#d48806"
-                : order.status === "delivering"
-                ? "blue"
-                : order.status === "canceled"
-                ? "red"
-                : "black",
-            fontWeight: "bold",
-          }}
-        >
-          {order.status}
-        </span>
-      </p>
-
-      {/* NOTE */}
-      {order.note && order.note.trim() !== "" && (
-        <p
-          style={{
-            marginTop: 6,
-            fontStyle: "italic",
-            color: "#555",
-          }}
-        >
-          Note: {order.note}
+      {/* FOOTER */}
+      <div className="mt-4">
+        <p className="text-sm">
+          <span className="font-medium">Total Paid :</span>{" "}
+          ₹{order.totalAmount}
         </p>
-      )}
+
+        <p className="text-sm mt-1">
+          <span className="font-medium">Status :</span>{" "}
+          <span
+            className={`font-medium ${
+              order.status === "pending"
+                ? "text-yellow-600"
+                : order.status === "completed"
+                ? "text-green-600"
+                : order.status === "canceled"
+                ? "text-red-600"
+                : "text-blue-600"
+            }`}
+          >
+            {order.status}
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
