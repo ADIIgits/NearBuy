@@ -162,7 +162,7 @@ export const getShopOrders = async (req, res) => {
     })
     .populate({
       path: "items.item",
-      select: "itemName price"
+      select: "itemName price itemIcon images"
     })
     .sort({ createdAt: -1 });
 
