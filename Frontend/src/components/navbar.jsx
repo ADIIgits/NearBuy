@@ -16,7 +16,7 @@ export default function Navbar() {
       {/* NAV LINKS */}
       <div className="flex flex-col gap-2">
         <NavLink to="/" className={linkBase}>
-          🏠 Home
+          <span><img src="/src/assets/icons/home.png" alt="" className="h-7 w-7"/></span> Home
         </NavLink>
 
         <NavLink
@@ -27,18 +27,18 @@ export default function Navbar() {
           }
           className={linkBase}
         >
-          📦 Orders
+          <span><img src="/src/assets/icons/order.png" alt="" className="h-7 w-7"/></span>Orders
         </NavLink>
 
         {/* USER-ONLY LINKS */}
         {user.type === "user" && (
           <>
             <NavLink to="/shop/all" className={linkBase}>
-              🏪 Shops
+              <span><img src="/src/assets/icons/shop.png" alt="" className="h-7 w-7"/></span>Shops
             </NavLink>
 
             <NavLink to="/shop/nearest" className={linkBase}>
-              📍 Nearest Shops
+              <span><img src="/src/assets/icons/nearbyshop.png" alt="" className="h-7 w-7"/></span>Nearest Shops
             </NavLink>
           </>
         )}
@@ -47,11 +47,11 @@ export default function Navbar() {
         {user.type === "shop" && (
           <>
             <NavLink to="/item/create" className={linkBase}>
-              ➕ Create Item
+              <span><img src="/src/assets/icons/createblack.png" alt="" className="h-7 w-7"/></span> Create Item
             </NavLink>
 
-            <NavLink to="/shop/all" className={linkBase}>
-              🏪 Listed Items
+            <NavLink to="/shop/me/items" className={linkBase}>
+              <span><img src="/src/assets/icons/listeditems.png" alt="" className="h-7 w-7"/></span> Listed Items
             </NavLink>
           </>
         )}

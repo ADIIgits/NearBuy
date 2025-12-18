@@ -21,7 +21,7 @@ export default function ShopSettings() {
 
   const [message, setMessage] = useState("");
 
-  // Fetch logged-in shop on load
+  /* ---------------- FETCH SHOP ---------------- */
   useEffect(() => {
     getLoggedInShop()
       .then((res) => {
@@ -37,163 +37,148 @@ export default function ShopSettings() {
             lat: shop.location.coordinates[1],
           });
         }
-
         setLoading(false);
       })
-      .catch((err) => {
-        console.log("Error fetching shop:", err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
+  if (loading) return <p className="p-6">Loading...</p>;
 
-  /* =========================
-     UPDATE SHOP NAME
-  ========================= */
+  /* ---------------- SHOP NAME ---------------- */
   const handleShopNameSave = async () => {
     try {
       await updateShopName(shopName);
       setMessage("Shop name updated!");
-    } catch (err) {
+    } catch {
       setMessage("Error updating shop name");
     }
   };
 
-  /* =========================
-     UPDATE PASSWORD
-  ========================= */
+  /* ---------------- PASSWORD ---------------- */
   const handlePasswordSave = async () => {
-    if (!newPassword.trim()) {
-      setMessage("Password cannot be empty!");
-      return;
-    }
+    if (!newPassword.trim()) return;
     try {
       await updateShopPassword(newPassword);
       setNewPassword("");
       setMessage("Password updated!");
-    } catch (err) {
+    } catch {
       setMessage("Error updating password");
     }
   };
 
-  /* =========================
-     UPLOAD + UPDATE SHOP ICON
-  ========================= */
+  /* ---------------- ICON ---------------- */
   const handleIconUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Local preview
-    const preview = URL.createObjectURL(file);
-    setPreviewIcon(preview);
+    setPreviewIcon(URL.createObjectURL(file));
 
     try {
-      // 1️⃣ Upload to Cloudinary
       const cloudRes = await uploadImageToCloudinary(file);
-      const imageUrl = cloudRes.secure_url;
-
-      if (!imageUrl) {
-        setMessage("Cloudinary upload failed.");
-        return;
-      }
-
-      // 2️⃣ Send URL to backend
-      await updateShopIcon(imageUrl);
-
+      await updateShopIcon(cloudRes.secure_url);
       setMessage("Shop icon updated!");
-    } catch (err) {
-      console.log(err);
+    } catch {
       setMessage("Error updating shop icon");
     }
   };
 
-  /* =========================
-     UPDATE LOCATION USING GPS
-  ========================= */
+  /* ---------------- LOCATION ---------------- */
   const updateLocationGPS = async () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
-      return;
-    }
-
     navigator.geolocation.getCurrentPosition(async (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-
       setLocation({ lat, lng });
-
-      try {
-        await updateShopLocation(lat, lng);
-        setMessage("Location updated!");
-      } catch (err) {
-        setMessage("Error updating location");
-      }
+      await updateShopLocation(lat, lng);
+      setMessage("Location updated!");
     });
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 600 }}>
-      <h2>Shop Settings</h2>
+    <div className="p-10 max-w-3xl">
+      {/* TITLE */}
+      <p className="text-sm text-gray-500">Settings</p>
+      <h1 className="text-4xl font-light mb-10">Profile</h1>
+
+      {/* PROFILE HEADER */}
+      <div className="flex gap-10 items-center mb-10">
+        <div className="flex flex-col items-center gap-3">
+          <img
+            src={previewIcon || "https://via.placeholder.com/150"}
+            className="w-32 h-32 rounded-full object-cover bg-gray-200"
+          />
+
+          <label className="px-5 py-2 rounded-full bg-gray-200 cursor-pointer text-sm">
+            choose file
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleIconUpload}
+            />
+          </label>
+        </div>
+
+        <p className="text-xl text-gray-600">{shopName}</p>
+      </div>
+
+      {/* SHOP NAME */}
+      <div className="mb-8">
+        <label className="block text-gray-600 mb-2">Shop Name</label>
+
+        <div className="flex gap-4 items-center">
+          <input
+            value={shopName}
+            onChange={(e) => setShopName(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-gray-200 w-72 outline-none"
+          />
+
+          <button
+            onClick={handleShopNameSave}
+            className="px-6 py-2 rounded-full bg-gray-200 hover:bg-gray-300"
+          >
+            Save Shop Name
+          </button>
+        </div>
+      </div>
+
+      {/* PASSWORD */}
+      <div className="mb-8">
+        <label className="block text-gray-600 mb-2">Change Password</label>
+
+        <div className="flex gap-4 items-center">
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="px-4 py-3 rounded-xl bg-gray-200 w-72 outline-none"
+          />
+
+          <button
+            onClick={handlePasswordSave}
+            className="px-6 py-2 rounded-full bg-gray-200 hover:bg-gray-300"
+          >
+            Save Password
+          </button>
+        </div>
+      </div>
+
+      {/* LOCATION */}
+      <div>
+        <label className="block text-gray-600 mb-2">
+          Save current Location
+        </label>
+
+        <button
+          onClick={updateLocationGPS}
+          className="px-5 py-2 rounded-full bg-gray-200 hover:bg-gray-300"
+        >
+          get location
+        </button>
+      </div>
 
       {message && (
-        <p style={{ color: "green", fontWeight: "bold" }}>{message}</p>
+        <p className="mt-6 text-green-600 font-medium">{message}</p>
       )}
-
-      {/* ================= SHOP ICON ================= */}
-      <section style={{ marginTop: 20 }}>
-        <h3>Shop Icon</h3>
-
-        <img
-          src={previewIcon || "https://via.placeholder.com/120"}
-          alt="shop"
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
-
-        <br />
-
-        <input type="file" accept="image/*" onChange={handleIconUpload} />
-      </section>
-
-      {/* ================= SHOP NAME ================= */}
-      <section style={{ marginTop: 20 }}>
-        <h3>Shop Name</h3>
-        <input
-          style={{ padding: 8, width: "100%", marginBottom: 8 }}
-          value={shopName}
-          onChange={(e) => setShopName(e.target.value)}
-        />
-        <button onClick={handleShopNameSave}>Save Shop Name</button>
-      </section>
-
-      {/* ================= PASSWORD ================= */}
-      <section style={{ marginTop: 20 }}>
-        <h3>Change Password</h3>
-        <input
-          type="password"
-          placeholder="New password"
-          style={{ padding: 8, width: "100%", marginBottom: 8 }}
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <button onClick={handlePasswordSave}>Save Password</button>
-      </section>
-
-      {/* ================= LOCATION ================= */}
-      <section style={{ marginTop: 20 }}>
-        <h3>Location</h3>
-        <p>
-          Lat: {location.lat} <br />
-          Lng: {location.lng}
-        </p>
-
-        <button onClick={updateLocationGPS}>Update Using GPS</button>
-      </section>
     </div>
   );
 }

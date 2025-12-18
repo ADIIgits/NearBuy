@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { reverseGeocode } from "../services/geoService";
 
-
-// Haversine formula
 function getDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -17,39 +15,8 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(2);
 }
 
-function formatDateWithAgo(dateString) {
-  const date = new Date(dateString);
-  const now = new Date();
-
-  // Absolute date (10 Jan 2025)
-  const absolute = date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  // Time difference
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / (1000 * 60));
-  const diffHr = Math.floor(diffMin / 60);
-  const diffDay = Math.floor(diffHr / 24);
-
-  let ago = "";
-  if (diffDay > 0) {
-    ago = `${diffDay} d ago`;
-  } else if (diffHr > 0) {
-    ago = `${diffHr} h ${diffMin % 60} min ago`;
-  } else {
-    ago = `${diffMin} min ago`;
-  }
-
-  return `${absolute}, ${ago}`;
-}
-
-
 export default function OrderCard({ order, shopLat, shopLng, onStatusChange }) {
   const coords = order.user?.location?.coordinates;
-  console.log("coords:", coords);
   const [address, setAddress] = useState("");
   const [status, setStatus] = useState(order.status);
 
@@ -60,141 +27,108 @@ export default function OrderCard({ order, shopLat, shopLng, onStatusChange }) {
   }
 
   useEffect(() => {
-  if (!coords) return;
-
-  reverseGeocode(lat, lng)
-    .then((res) => setAddress(res.data.address))
-    .catch(() => setAddress("Address unavailable"));
+    if (!coords) return;
+    reverseGeocode(lat, lng)
+      .then((res) => setAddress(res.data.address))
+      .catch(() => setAddress("Address unavailable"));
   }, [lat, lng]);
 
-
-  const mapUrl = coords
-    ? `https://www.google.com/maps?q=${lat},${lng}`
-    : null;
-
-  const STATUS_OPTIONS = [
-    "pending",
-    "preparing",
-    "delivering",
-    "completed",
-    "canceled",
-  ];
-
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 16,
-        border: "1px solid #ccc",
-        padding: 15,
-        borderRadius: 8,
-        background: "#fff",
-      }}
-    >
-      {/* LEFT: ORDER DETAILS */}
-      <div style={{ flex: 1 }}>
-        {/* USER INFO */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="bg-gray-200 rounded-2xl p-6 flex gap-6">
+      {/* LEFT */}
+      <div className="flex-1">
+        {/* USER */}
+        <div className="flex items-center gap-3">
           <img
             src={order.user?.userIcon}
             alt="user"
-            style={{ width: 40, height: 40, borderRadius: "50%" }}
+            className="w-12 h-12 rounded-full object-cover bg-gray-300"
           />
           <div>
-            <b>@{order.user?.username}</b>
+            <p className="font-medium">@{order.user?.username}</p>
+            <p className="text-sm text-gray-600">
+              Order id: {order._id.slice(-6)}
+            </p>
             {coords && (
-              <p style={{ fontSize: 13, margin: 0, color: "#555" }}>
+              <p className="text-xs text-gray-500">
                 📏 {distKm} km away
               </p>
             )}
           </div>
         </div>
 
-        {/* META */}
-        <p style={{ fontSize: 14, color: "#666", marginTop: 6 }}>
-          Order #{order._id.slice(-6)} •{" "}
-          {formatDateWithAgo(order.createdAt)}
-        </p>
-
-
         {/* ITEMS */}
-        <div style={{ marginTop: 10 }}>
-          {order.items?.map((itm) => (
+        <p className="mt-4 font-medium">Items</p>
+
+        <div className="flex gap-4 mt-2">
+          {order.items.map((itm) => (
             <div
               key={itm._id}
-              style={{
-                border: "1px solid #eee",
-                padding: 8,
-                borderRadius: 6,
-                marginBottom: 6,
-              }}
+              className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-300"
             >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>{itm.item?.itemName}</span>
-                <span>Qty: {itm.quantity}</span>
+              {/* IMAGE */}
+              <img
+                src={itm.item?.itemIcon}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+
+              {/* DARK GRADIENT OVERLAY */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+
+              {/* QTY BADGE */}
+              <div className="absolute top-1 right-1 z-10 bg-black text-white text-xs w-6 h-6 flex items-center justify-center rounded-full">
+                {itm.quantity}
+              </div>
+
+              {/* TEXT */}
+              <div className="absolute bottom-2 left-2 z-10 text-white text-xs leading-tight">
+                <p className="font-medium">{itm.item?.itemName}</p>
+                <p>₹{itm.item?.price}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <p>
-          <b>Total:</b> ₹{order.totalAmount}
-        </p>
+        {/* TOTAL + STATUS */}
+        <div className="mt-4 text-sm">
+          <p>Total Price : ₹{order.totalAmount}</p>
 
-        {/* STATUS */}
-        <div>
-          <b>Status:</b>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              onStatusChange(order._id, e.target.value);
-            }}
-            style={{ marginLeft: 6 }}
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2 mt-1">
+            <span>Status :</span>
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                onStatusChange(order._id, e.target.value);
+              }}
+              className="bg-transparent border-none outline-none font-medium cursor-pointer"
+            >
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="delivering">Delivering</option>
+              <option value="completed">Completed</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
         </div>
-
-        {order.note && (
-          <p style={{ fontStyle: "italic", color: "#444" }}>
-            Note: {order.note}
-          </p>
-        )}
       </div>
 
-      {/* RIGHT: MAP PREVIEW */}
+      {/* RIGHT */}
       {coords && (
-        <div style={{ width: 220 }}>
-          <a
-            href={`https://www.google.com/maps?q=${lat},${lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
+        <div className="w-56 text-sm text-gray-600">
+          <div className="w-full h-40 bg-gray-300 rounded-xl overflow-hidden">
             <iframe
               title="map"
-              width="220"
-              height="140"
-              style={{
-                border: 0,
-                borderRadius: 6,
-                pointerEvents: "none", // prevents scroll hijack
-              }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full pointer-events-none"
               src={`https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`}
             />
-          </a>
-
-          <div style={{ marginTop: 6, fontSize: 12, color: "#555" }}>
-            <div>📍 {lat}, {lng}</div>
-            <div style={{ marginTop: 4 }}>{address}</div>
           </div>
+
+          <p className="mt-2">
+            Lat : {lat} &nbsp; Lng : {lng}
+          </p>
+          <p className="mt-1">{address}</p>
         </div>
       )}
     </div>

@@ -13,6 +13,8 @@ import NearestShops from "./pages/NearestShops";
 import CreateItem from "./pages/CreateItem";
 import UserSettings from "./pages/UserSettings";
 import ShopSettings from "./pages/ShopSettings";
+import ListedItems from "./pages/ListedItems";
+import UpdateItem from "./pages/UpdateItem";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
             <Route path="/shop/all" element={<Shops />} />
             <Route path="/shop/:id" element={<ShopDetails />} />
             <Route path="/shop/nearest" element={<NearestShops />} />
+            <Route path="/shop/me/items" element={<ListedItems />} />
 
             <Route path="/order/shop/me" element={<ShopOrders />} />
             <Route path="/order/user/me" element={<UserOrders />} />
@@ -39,6 +42,7 @@ function App() {
             <Route path="/item/create" element={<CreateItem />} />
             <Route path="/settings/user" element={<UserSettings />} />
             <Route path="/settings/shop" element={<ShopSettings />} />
+            <Route path="/item/update/:id" element={<UpdateItem />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -9,10 +9,11 @@ export const findNearestShops = (lat, lng) => {
 
 export const getLoggedInShop = () => api.get("/shop/me");
 
+export const getLoggedInShopItems = () => api.get("/shop/me/items");
 // UPDATE SHOP NAME
 // ==========================
 export const updateShopName = (shopName) =>
-  api.post("/settings/shop/update/name", { shopName });
+  api.post("/settings/shop/update/shopname", { shopName });
 
 //update username
 export const updateShopUsername = (username) =>
