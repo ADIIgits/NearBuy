@@ -20,12 +20,15 @@ import NotFound from "./pages/NotFound";
 function App() {
   return (
     <Router>
+      {/* FULL WIDTH HEADBAR */}
       <Headbar />
 
-      <div className="flex h-screen overflow-hidden">
+      {/* BELOW HEADBAR */}
+      <div className="flex h-[calc(100vh-56px)] overflow-hidden">
         <Navbar />
 
-        <main className="flex-1 overflow-y-auto bg-white">
+        {/* SCROLL CONTAINER */}
+        <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
@@ -53,3 +56,4 @@ function App() {
 }
 
 export default App;
+
