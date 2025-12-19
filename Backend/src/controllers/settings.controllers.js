@@ -1,6 +1,6 @@
 import User from "../models/user.models.js";
 import Shop from "../models/shop.models.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const getModel = (type) => (type === "shop" ? Shop : User);
 
