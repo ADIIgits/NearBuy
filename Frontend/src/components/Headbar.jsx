@@ -37,10 +37,10 @@ export default function Headbar() {
           </button>
         ) : (
           <>
-            <button className="px-4 py-1 rounded-lg bg-gray-300">
+            <button className="px-4 py-1 rounded-lg bg-gray-300" onClick={() => navigate("/register")}>
               Register
             </button>
-            <button className="px-4 py-1 rounded-lg bg-gray-300">
+            <button className="px-4 py-1 rounded-lg bg-gray-300" onClick={() => navigate("/login")}>
               Login
             </button>
           </>
