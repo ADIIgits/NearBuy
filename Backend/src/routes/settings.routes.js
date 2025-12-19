@@ -9,8 +9,7 @@ import {
 
 const router = express.Router();
 
-// Multer for file uploads
-const upload = multer({ dest: "uploads/" });
+
 
 // Update username
 router.post("/user/update/username", updateUsername);
