@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 import UserOrderCard from "../components/UserOrderCard";
 import {
   getAllUserOrders,

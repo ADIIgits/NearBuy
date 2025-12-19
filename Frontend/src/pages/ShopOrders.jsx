@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 import OrderCard from "../components/OrderCard";
 import { getAllShopOrders, getLoggedInShop, updateOrderStatus } from "../services/orderService";
 

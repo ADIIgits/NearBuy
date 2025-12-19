@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 import { createNewItem } from "../services/itemService";
 import { uploadImageToCloudinary } from "../services/uploadService";
 

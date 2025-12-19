@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../context/AuthContext";
 
 const linkBase =
   "flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200";
