@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://nearbuy-backend-csue.onrender.com", // your backend base URL
+  baseURL: import.meta.env.VITE_API_BASE_URL, // your backend base URL
   headers: {
         'Content-Type': 'application/json',
     },

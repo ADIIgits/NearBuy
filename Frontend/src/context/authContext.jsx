@@ -9,7 +9,7 @@ export default function AuthProvider({ children }) {
 
   // Restore session on refresh
   useEffect(() => {
-    api.get("/auth/session")
+    api.get("api/auth/session")
       .then(res => setUser(res.data.user))
       .catch(() => {});
   }, []);
@@ -17,7 +17,7 @@ export default function AuthProvider({ children }) {
   const login = (userdata) => setUser(userdata);
 
   const logout = async () => {
-    await api.post("/auth/logout");
+    await api.post("api/auth/logout");
     setUser(null);
   };
 
