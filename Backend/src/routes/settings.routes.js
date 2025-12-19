@@ -18,7 +18,7 @@ router.post("/user/update/username", updateUsername);
 router.post("/user/update/password", updatePassword);
 
 // Update profile icon
-router.post("/user/update/icon", upload.single("image"), updateUserIcon);
+router.post("/user/update/icon", updateUserIcon);
 
 // Update location
 router.post("/user/update/location", updateUserLocation);
