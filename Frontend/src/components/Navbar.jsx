@@ -1,6 +1,12 @@
 import { useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import homeIcon from "../assets/icons/home.png";
+import orderIcon from "../assets/icons/order.png";
+import shopIcon from "../assets/icons/shop.png";
+import nearbyShopIcon from "../assets/icons/nearbyshop.png";
+import createIcon from "../assets/icons/createblack.png";
+import listedItemsIcon from "../assets/icons/listeditems.png";
 
 const linkBase =
   "flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-200";
@@ -16,7 +22,7 @@ export default function Navbar() {
       {/* NAV LINKS */}
       <div className="flex flex-col gap-2">
         <NavLink to="/" className={linkBase}>
-          <span><img src="/src/assets/icons/home.png" alt="" className="h-7 w-7"/></span> Home
+          <span><img src={homeIcon} alt="" className="h-7 w-7"/></span> Home
         </NavLink>
 
         <NavLink
@@ -27,18 +33,18 @@ export default function Navbar() {
           }
           className={linkBase}
         >
-          <span><img src="/src/assets/icons/order.png" alt="" className="h-7 w-7"/></span>Orders
+          <span><img src={orderIcon} alt="" className="h-7 w-7"/></span>Orders
         </NavLink>
 
         {/* USER-ONLY LINKS */}
         {user.type === "user" && (
           <>
             <NavLink to="/shop/all" className={linkBase}>
-              <span><img src="/src/assets/icons/shop.png" alt="" className="h-7 w-7"/></span>Shops
+              <span><img src={shopIcon} alt="" className="h-7 w-7"/></span>Shops
             </NavLink>
 
             <NavLink to="/shop/nearest" className={linkBase}>
-              <span><img src="/src/assets/icons/nearbyshop.png" alt="" className="h-7 w-7"/></span>Nearest Shops
+              <span><img src={nearbyShopIcon} alt="" className="h-7 w-7"/></span>Nearest Shops
             </NavLink>
           </>
         )}
@@ -47,11 +53,11 @@ export default function Navbar() {
         {user.type === "shop" && (
           <>
             <NavLink to="/item/create" className={linkBase}>
-              <span><img src="/src/assets/icons/createblack.png" alt="" className="h-7 w-7"/></span> Create Item
+              <span><img src={createIcon} alt="" className="h-7 w-7"/></span> Create Item
             </NavLink>
 
             <NavLink to="/shop/me/items" className={linkBase}>
-              <span><img src="/src/assets/icons/listeditems.png" alt="" className="h-7 w-7"/></span> Listed Items
+              <span><img src={listedItemsIcon} alt="" className="h-7 w-7"/></span> Listed Items
             </NavLink>
           </>
         )}
