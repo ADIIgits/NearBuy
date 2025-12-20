@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import nearbuyIcon from "../assets/icons/nearbuyicon.png";
 
 export default function Headbar() {
   const { user, logout } = useContext(AuthContext);
@@ -20,7 +21,7 @@ export default function Headbar() {
         onClick={() => navigate("/")}
       >
         <img
-          src="/src/assets/icons/nearbuyicon.png"
+          src={nearbuyIcon}
           alt="cart"
           className="w-9 h-9"
         />
