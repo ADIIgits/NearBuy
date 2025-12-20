@@ -14,7 +14,7 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(cors({
-  origin: true,
+  origin: ["http://localhost:5173", "https://near-3vduspcaq-adityas-projects-c271eef9.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
