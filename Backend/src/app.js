@@ -13,11 +13,15 @@ const app = express();
 
 // Middlewares
 app.use(express.json());
-app.use(cors({
-  origin: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -28,12 +32,12 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax"
-    },
+      cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      },
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       dbName: "nearbuy",
@@ -59,5 +63,7 @@ app.use("/api/shop",shopRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/geo", geoRoutes);
+
+
 
 export default app;
