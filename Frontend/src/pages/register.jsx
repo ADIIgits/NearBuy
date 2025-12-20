@@ -6,6 +6,7 @@ import tick from "../assets/icons/tick.png";
 import tickFilled from "../assets/icons/tickfilled.png";
 import cross from "../assets/icons/cross.png";
 import loading from "../assets/icons/loading.gif";
+import { Navigate } from "react-router-dom";
 
 export default function Register() {
   const [type, setType] = useState("user");
@@ -64,6 +65,7 @@ export default function Register() {
         password,
         location,
       });
+      Navigate("/login");
     } catch {
       setError("Registration failed");
     }

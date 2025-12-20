@@ -41,7 +41,7 @@ export default function ShopOrders() {
   if (loading) return <p className="p-6">Loading orders...</p>;
 
   return (
-    <div className="p-8 bg-red-700">
+    <div className="p-8 bg-white">
       <p className="text-sm text-gray-500">Orders</p>
       <h1 className="text-3xl font-light mb-6">Recent Orders</h1>
 

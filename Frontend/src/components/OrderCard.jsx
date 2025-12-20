@@ -34,7 +34,7 @@ export default function OrderCard({ order, shopLat, shopLng, onStatusChange }) {
   }, [lat, lng]);
 
   return (
-    <div className="bg-red-200 rounded-2xl p-6 flex gap-6">
+    <div className="bg-gray-200 rounded-2xl p-6 flex gap-6">
       {/* LEFT */}
       <div className="flex-1">
         {/* USER */}
