@@ -14,7 +14,15 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:5173", "https://near-3vduspcaq-adityas-projects-c271eef9.vercel.app"],
+  origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin);
+    const allowedOrigins = ['http://localhost:5173', 'https://near-3vduspcaq-adityas-projects-c271eef9.vercel.app'];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
