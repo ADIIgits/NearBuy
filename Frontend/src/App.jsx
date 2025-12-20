@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Headbar from "./components/Headbar";
-import Navbar from "./components/Navbar";
+import Headbar from "./components/Headbar.jsx";
+import Navbar from "./components/Navbar.jsx";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
