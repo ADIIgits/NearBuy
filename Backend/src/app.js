@@ -13,30 +13,15 @@ const app = express();
 
 // Middlewares
 app.use(express.json());
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_URL = true;
+
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, etc.)
-      if (!origin) return callback(null, true);
-      if (origin === CLIENT_URL) return callback(null, true);
-      return callback(new Error('Not allowed by CORS'), false);
-    },
-    credentials: true,
+    origin: CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 200,
+    credentials: true,
   })
 );
-
-// Explicitly handle preflight requests for all routes
-app.options('*', cors({
-  origin: CLIENT_URL,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200,
-}));
 
 import session from "express-session";
 import MongoStore from "connect-mongo";
@@ -69,6 +54,7 @@ app.use(
 app.get("/", (req, res) => {
   res.send("NearBuy API — Backend is live");
 });
+
 
 // Example auth routes
 app.use("/api/auth", authRoutes);
